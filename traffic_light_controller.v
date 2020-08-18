@@ -6,16 +6,15 @@ module traffic_light_controller (
 	input reset,
 	output reg [2:0] NS, WE);
 
-// State Parameters
+// States (According to given state diagram)
 
 parameter s0 = 3'b000, s1 = 3'b001, s2 = 3'b010, s3 = 3'b011, s4 = 3'b100, s5 = 3'b101;
 
-// States 
 
-reg [2:0] crt_state, nxt_state;
+reg [2:0] crt_state, nxt_state; // Current State and Next State
 reg [5:0] count;
 
-// State Counting
+// Counter to count number of clock cycles each state is active in
 
 always @(posedge clk) begin
 
@@ -43,27 +42,32 @@ end
 
 // Next State Logic
 
+// As given in the document, the 3Hz clock is used and 1 second is equal to 3 clock cycles, 
+// therefore 5 seconds is equal to 15 clock cycles.
+ 
 always @(count or crt_state) begin
 
 case(crt_state)
 
 s0: begin
-if (count<6'd15) begin
+if (count<6'd15) begin // Below 15 clock cycles, s0 state is maintained
 nxt_state <= s0;
 end
 else begin
-nxt_state <= s1;
+nxt_state <= s1;  // After 15 clock cycles, the state changes to s1
 end
 end
 
 s1: begin
-if (count<6'd18) begin 
+if (count<6'd18) begin // s1 is maintained for 1 second i.e.., 3 clock cycles i.e.., 15 + 3 = 18 clock cycles
 nxt_state <= s1;
 end
 else begin
-nxt_state <= s2;
+nxt_state <= s2; // After 18th clock cycle, the state changed to s2. 
 end
 end
+
+// And it will go on as per the given state diagram in the document.
 
 s2: begin
 if (count<6'd21) begin 
@@ -105,7 +109,8 @@ endcase
 
 end
 
-// Output Logic
+// Output Logic ( 3 bit output : red (MSB) - yellow - green (LSB) )
+// The outputs are given in the state table mentioned in the document.
 
 always @(crt_state) begin
 
